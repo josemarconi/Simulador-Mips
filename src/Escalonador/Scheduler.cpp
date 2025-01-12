@@ -15,8 +15,8 @@ Scheduler::Scheduler(RAM &ram, Disco &disco, vector<unique_ptr<Core>> &cores) : 
     createAndAddProcess(6, "data/instructions5.txt", "data/setRegisters.txt", ram, disco);
 
     schedule_FCFS(ram, disco);
-    //schedule_SJF(ram, disco);
-    //schedule_Lottery(ram, disco);
+    schedule_SJF(ram, disco);
+    schedule_Lottery(ram, disco);
 }
 
 void Scheduler::createAndAddProcess(int PCB_ID, const string &arquivoInstrucoes, const string &arquivoRegistros, RAM &ram, Disco &disco)
