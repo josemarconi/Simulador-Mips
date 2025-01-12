@@ -6,16 +6,18 @@ Core::Core(int id, RAM& ram, Disco& disco) : ID(id), ram(ram), disco(disco), PC(
 
 void Core::executeProcess(Processos* process, queue<Processos*>& processQueue, RAM& ram, Disco& disco) 
 {
-    lock_guard<std::mutex> lock(coutMutex);
+    lock_guard<mutex> lock(coutMutex);
     try {
-        if (process == nullptr) {
+        if (process == nullptr) 
+        {
             cerr << "Erro: Tentativa de executar processo nulo no Core " << ID << endl;
             return;
         }
 
         process->execute(ram, disco, Clock);
 
-        switch (process->pcb.state) {
+        switch (process->pcb.state) 
+        {
             case Processos::TERMINATED:
                 cout << endl <<  "Processo " << process->pcb.ID << " finalizado no Core " << ID << endl;
                 break;
@@ -24,16 +26,91 @@ void Core::executeProcess(Processos* process, queue<Processos*>& processQueue, R
                 break;
         }
 
-        if (process->pcb.state == Processos::BLOCK) {
+        if (process->pcb.state == Processos::BLOCK) 
+        {
             processQueue.push(process); 
         }
     }
-    catch (const exception& e) {
+    catch (const exception& e) 
+    {
         cerr << "Erro na execução do core " << ID << ": " << e.what() << endl;
     }
 
     setBusy(false);
 }
+
+void Core::executeProcess_SJF(Processos* process, priority_queue<Processos*, vector<Processos*>, Processos::SJFComparator>& processQueue, RAM& ram, Disco& disco)
+{
+    lock_guard<mutex> lock(coutMutex);
+
+    try {
+        if (process == nullptr) 
+        {
+            cerr << "Erro: Tentativa de executar processo nulo no Core " << ID << endl;
+            return;
+        }
+
+        process->execute(ram, disco, Clock);
+
+        switch (process->pcb.state) 
+        {
+            case Processos::TERMINATED:
+                cout << endl <<  "Processo " << process->pcb.ID << " finalizado no Core " << ID << endl;
+                break;
+            case Processos::BLOCK:
+                cout << endl << "Processo " << process->pcb.ID << " bloqueado no Core " << ID << endl;
+                break;
+        }
+
+        if (process->pcb.state == Processos::BLOCK) 
+        {
+            processQueue.push(process); 
+        }
+    }
+    catch (const exception& e) 
+    {
+        cerr << "Erro na execução do core " << ID << ": " << e.what() << endl;
+    }
+
+    setBusy(false);
+}
+
+void Core::executeProcess_Lottery(Processos* process, vector<Processos*>& lottery_queue, RAM& ram, Disco& disco)
+{
+    lock_guard<mutex> lock(coutMutex);
+
+    try {
+        if (process == nullptr) 
+        {
+            cerr << "Erro: Tentativa de executar processo nulo no Core " << ID << endl;
+            return;
+        }
+
+        process->execute(ram, disco, Clock);
+
+        switch (process->pcb.state) 
+        {
+            case Processos::TERMINATED:
+                cout << endl <<  "Processo " << process->pcb.ID << " finalizado no Core " << ID << endl;
+                break;
+            case Processos::BLOCK:
+                cout << endl << "Processo " << process->pcb.ID << " bloqueado no Core " << ID << endl;
+                break;
+        }
+
+        if (process->pcb.state == Processos::BLOCK) 
+        {
+            lottery_queue.push_back(process); 
+        }
+    }
+    catch (const exception& e) 
+    {
+        cerr << "Erro na execução do core " << ID << ": " << e.what() << endl;
+    }
+
+    setBusy(false);
+}
+
 
 bool Core::isBusy() const 
 {

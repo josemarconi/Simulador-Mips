@@ -17,6 +17,8 @@
 #include "Disco.hpp"
 #include "UnidadeControle.hpp"
 
+
+
 class Processos
 {
 public:
@@ -38,6 +40,7 @@ public:
         Registers regs;
         string files;
         int quantumTotal;
+        int lottery_tickets;
     };
 
     UnidadeControle uc;
@@ -55,6 +58,14 @@ public:
     void execute(RAM &ram, Disco &disco, int &clock);
     void block();
     void unblock();
+
+    struct SJFComparator 
+    {
+        bool operator()(const Processos* a, const Processos* b) 
+            {
+                return a->pcb.quantum > b->pcb.quantum; 
+            }
+    };
 
 private:
     mutex process_mutex;
