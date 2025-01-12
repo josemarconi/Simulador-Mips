@@ -7,6 +7,7 @@ Processos::Processos(int PCB_ID, const std::string &files) {
     pcb.quantum = 12;
     pcb.actual_Instruction = 0;
     filename = files;
+    pcb.quantumTotal = 0;
 }
 
 void Processos::RegistersLoad(const string& arquivoRegistros, RAM& ram, Disco& disco){
@@ -60,6 +61,7 @@ void Processos::execute(RAM &ram, Disco &disco, int &clock)
 
     int counter = 0;
     int aux = 0;
+    int anterior_counter = 0;
 
     try {
         for (size_t i = 0; i < instrucoes.size(); ++i) {
@@ -68,8 +70,10 @@ void Processos::execute(RAM &ram, Disco &disco, int &clock)
             counter++;
         }
 
-        while (PC < instrucoes.size() * 4) {
-
+        while (PC < instrucoes.size() * 4) 
+        {
+            int total = 0;
+            
             if (counter >= pcb.quantum) {
                 cout << endl << "--- PROCESSO BLOQUEADO, QUANTUM EXCEDIDO ---";
                 pcb.actual_Instruction = PC / 4;
@@ -85,6 +89,8 @@ void Processos::execute(RAM &ram, Disco &disco, int &clock)
             clock++;
             counter++;
 
+            aux = clock;
+
             cout << endl << "[Processo " << pcb.ID << "] Executando instrução:" 
                       << " PC=" << PC 
                       << " Opcode=" << decodedInstr.opcode 
@@ -92,16 +98,20 @@ void Processos::execute(RAM &ram, Disco &disco, int &clock)
                       << " Valor1=" << decodedInstr.value1 
                       << " Valor2=" << decodedInstr.value2 << endl;
 
-            aux = clock;
 
             uc.executePipeline(decodedInstr, pcb.regs, ram, PC, disco, clock);
             PC += 4;
 
             aux = clock - aux;
             counter += aux;
+            total = counter - anterior_counter;
+            pcb.quantumTotal += total;
 
+            cout << "State:" << pcb.state << endl;
             cout << "Arquivo fonte: " << filename << endl;
+            cout << "Quantum total utilizado: " << pcb.quantumTotal << endl;
             cout << "clock = " << clock << endl;
+            anterior_counter = counter;
         }
         
         if (PC >= instrucoes.size() * 4) 

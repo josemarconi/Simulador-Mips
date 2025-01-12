@@ -37,6 +37,7 @@ public:
         int actual_Instruction;
         Registers regs;
         string files;
+        int quantumTotal;
     };
 
     UnidadeControle uc;
