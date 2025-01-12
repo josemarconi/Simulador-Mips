@@ -17,6 +17,8 @@
 #include "Disco.hpp"
 #include "UnidadeControle.hpp"
 
+
+
 class Processos
 {
 public:
@@ -38,6 +40,7 @@ public:
         Registers regs;
         string files;
         int quantumTotal;
+        int lottery_tickets;
     };
 
     UnidadeControle uc;

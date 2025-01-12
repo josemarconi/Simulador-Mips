@@ -7,6 +7,7 @@ Processos::Processos(int PCB_ID, const std::string &files) {
     pcb.actual_Instruction = 0;
     filename = files;
     pcb.quantumTotal = 0;
+    pcb.lottery_tickets = 0;
 }
 
 void Processos::RegistersLoad(const string& arquivoRegistros, RAM& ram, Disco& disco){
@@ -54,14 +55,17 @@ void Processos::StructionsLoad(const string& arquivoInstrucoes) {
     if(cont >= 1 && cont <= 3)
     {
         pcb.quantum = 15;
+        pcb.lottery_tickets = 5;
     }
     else if(cont >=4 && cont <= 8)
     {
         pcb.quantum = 20;
+        pcb.lottery_tickets = 3;
     }
     else if(cont >= 9)
     {
         pcb.quantum = 25;
+        pcb.lottery_tickets = 1;
     }
 
     arquivo.close();

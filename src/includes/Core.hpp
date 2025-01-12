@@ -27,5 +27,5 @@ public:
     bool isBusy() const;
     void setBusy(bool busy);
     void executeProcess_SJF(Processos* process, priority_queue<Processos*, vector<Processos*>, Processos::SJFComparator>& processQueue, RAM& ram, Disco& disco);
-
+    void executeProcess_Lottery(Processos* process, vector<Processos*>& lottery_queue, RAM& ram, Disco& disco);
 };

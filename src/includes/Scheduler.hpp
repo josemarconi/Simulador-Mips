@@ -10,6 +10,7 @@
 #include <filesystem>
 #include <iostream>
 #include <algorithm>
+#include <random>
 
 namespace fs = std::filesystem;
 
@@ -27,6 +28,7 @@ public:
 private:
     queue<Processos*> process_queue;
     priority_queue<Processos*, vector<Processos*>, Processos::SJFComparator> sjf_queue;
+    vector<Processos*> lottery_queue;
 
     RAM& ram;
     Disco& disco;
@@ -36,6 +38,7 @@ private:
 
     void schedule_FCFS(RAM& ram, Disco& disco);
     void schedule_SJF(RAM& ram, Disco& disco);
+    void schedule_Lottery(RAM& ram, Disco& disco);
 };
 
 #endif
