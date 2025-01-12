@@ -70,7 +70,7 @@ void Scheduler::schedule_FCFS(RAM &ram, Disco &disco)
 
                     if (process_queue.empty())
                     {
-                        process->pcb.quantum = std::numeric_limits<int>::max(); // Define um quantum muito grande
+                        process->pcb.quantum = std::numeric_limits<int>::max(); 
                     }
 
                     cout << endl
@@ -166,6 +166,11 @@ void Scheduler::schedule_Lottery(RAM &ram, Disco &disco)
                     if (!core->isBusy() && !lottery_queue.empty())
                     {
                         lottery_queue.erase(remove(lottery_queue.begin(), lottery_queue.end(), winning_process), lottery_queue.end());
+
+                        if (lottery_queue.empty())
+                        {
+                            winning_process->pcb.quantum = numeric_limits<int>::max();
+                        }
 
                         cout << endl
                              << endl;
