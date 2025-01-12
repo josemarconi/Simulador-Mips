@@ -26,6 +26,7 @@ public:
     
 private:
     queue<Processos*> process_queue;
+    priority_queue<Processos*, vector<Processos*>, Processos::SJFComparator> sjf_queue;
 
     RAM& ram;
     Disco& disco;
@@ -33,7 +34,8 @@ private:
 
     mutex scheduler_mutex;
 
-    void schedule(RAM& ram, Disco& disco);
+    void schedule_FCFS(RAM& ram, Disco& disco);
+    void schedule_SJF(RAM& ram, Disco& disco);
 };
 
 #endif

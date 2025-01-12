@@ -4,9 +4,9 @@ Processos::Processos(int PCB_ID, const std::string &files) {
 
     pcb.ID = PCB_ID;
     pcb.state = READY;
-    pcb.quantum = 12;
     pcb.actual_Instruction = 0;
     filename = files;
+    pcb.quantumTotal = 0;
 }
 
 void Processos::RegistersLoad(const string& arquivoRegistros, RAM& ram, Disco& disco){
@@ -21,6 +21,7 @@ void Processos::StructionsLoad(const string& arquivoInstrucoes) {
 
     instrucoes.clear();
     string linha;
+    int cont = 0;
 
     while (getline(arquivo, linha)) {
         istringstream ss(linha);
@@ -47,6 +48,20 @@ void Processos::StructionsLoad(const string& arquivoInstrucoes) {
 
         Instruction instrucao(opcode, reg1, reg2, reg3);
         instrucoes.push_back(instrucao);
+        cont++;
+    }
+
+    if(cont >= 1 && cont <= 3)
+    {
+        pcb.quantum = 15;
+    }
+    else if(cont >=4 && cont <= 8)
+    {
+        pcb.quantum = 20;
+    }
+    else if(cont >= 9)
+    {
+        pcb.quantum = 25;
     }
 
     arquivo.close();
@@ -60,6 +75,7 @@ void Processos::execute(RAM &ram, Disco &disco, int &clock)
 
     int counter = 0;
     int aux = 0;
+    int anterior_counter = 0;
 
     try {
         for (size_t i = 0; i < instrucoes.size(); ++i) {
@@ -68,8 +84,10 @@ void Processos::execute(RAM &ram, Disco &disco, int &clock)
             counter++;
         }
 
-        while (PC < instrucoes.size() * 4) {
-
+        while (PC < instrucoes.size() * 4) 
+        {
+            int total = 0;
+            
             if (counter >= pcb.quantum) {
                 cout << endl << "--- PROCESSO BLOQUEADO, QUANTUM EXCEDIDO ---";
                 pcb.actual_Instruction = PC / 4;
@@ -85,6 +103,8 @@ void Processos::execute(RAM &ram, Disco &disco, int &clock)
             clock++;
             counter++;
 
+            aux = clock;
+
             cout << endl << "[Processo " << pcb.ID << "] Executando instrução:" 
                       << " PC=" << PC 
                       << " Opcode=" << decodedInstr.opcode 
@@ -92,16 +112,20 @@ void Processos::execute(RAM &ram, Disco &disco, int &clock)
                       << " Valor1=" << decodedInstr.value1 
                       << " Valor2=" << decodedInstr.value2 << endl;
 
-            aux = clock;
 
             uc.executePipeline(decodedInstr, pcb.regs, ram, PC, disco, clock);
             PC += 4;
 
             aux = clock - aux;
             counter += aux;
+            total = counter - anterior_counter;
+            pcb.quantumTotal += total;
 
+            cout << "State:" << pcb.state << endl;
             cout << "Arquivo fonte: " << filename << endl;
+            cout << "Quantum total utilizado: " << pcb.quantumTotal << endl;
             cout << "clock = " << clock << endl;
+            anterior_counter = counter;
         }
         
         if (PC >= instrucoes.size() * 4) 

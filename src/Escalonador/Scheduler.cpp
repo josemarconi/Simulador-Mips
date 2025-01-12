@@ -14,7 +14,8 @@ Scheduler::Scheduler(RAM& ram, Disco& disco, vector<unique_ptr<Core>>& cores) : 
     createAndAddProcess(5, "data/instructions4.txt", "data/setRegisters.txt", ram, disco);
     createAndAddProcess(6, "data/instructions5.txt", "data/setRegisters.txt", ram, disco);
 
-    schedule(ram, disco); 
+    //schedule_FCFS(ram, disco); 
+    schedule_SJF(ram, disco);
 }
 
 void Scheduler::createAndAddProcess(int PCB_ID, const string& arquivoInstrucoes, const string& arquivoRegistros, RAM& ram, Disco& disco) 
@@ -36,6 +37,7 @@ void Scheduler::createAndAddProcess(int PCB_ID, const string& arquivoInstrucoes,
         process->RegistersLoad(arquivoRegistros, ram, disco);
 
         process_queue.push(process);
+        sjf_queue.push(process);
 
         }
         catch (const exception& e) {
@@ -43,7 +45,7 @@ void Scheduler::createAndAddProcess(int PCB_ID, const string& arquivoInstrucoes,
         } 
 }
 
-void Scheduler::schedule(RAM& ram, Disco& disco) 
+void Scheduler::schedule_FCFS(RAM& ram, Disco& disco) 
 {
     unique_lock<mutex> lock(scheduler_mutex);
     
@@ -57,6 +59,12 @@ void Scheduler::schedule(RAM& ram, Disco& disco)
                 {
                     Processos* process = process_queue.front();
                     process_queue.pop();
+
+                    if (process_queue.empty()) 
+                    {
+                        process->pcb.quantum = std::numeric_limits<int>::max(); // Define um quantum muito grande
+                    }
+
                     cout << endl << endl;
                     cout << "Processo " << process->pcb.ID << " sendo executado no core " << core->ID << endl;
 
@@ -70,10 +78,43 @@ void Scheduler::schedule(RAM& ram, Disco& disco)
     }
 }
 
+void Scheduler::schedule_SJF(RAM& ram, Disco& disco) 
+{
+    unique_lock<mutex> lock(scheduler_mutex);
+    
+    vector<thread> threads;
+    
+    while (!sjf_queue.empty() || any_of(cores.begin(), cores.end(), [](const unique_ptr<Core>& core) { return core->isBusy(); })) {
+        if (!sjf_queue.empty())
+        {
+            for (auto& core : cores) {
+                if (!core->isBusy() && !sjf_queue.empty())  
+                {
+                    Processos* process = sjf_queue.top();
+                    sjf_queue.pop();
+                    
+                    if (sjf_queue.empty()) 
+                    {
+                        process->pcb.quantum = std::numeric_limits<int>::max(); // Define um quantum muito grande
+                    }
+                    
+                    cout << endl << endl;
+                    cout << "Processo " << process->pcb.ID << " sendo executado no core " << core->ID << endl;
+                    
+                    core->setBusy(true);
+                    threads.emplace_back(&Core::executeProcess_SJF, core.get(), process, std::ref(sjf_queue), std::ref(ram), std::ref(disco)).detach();
+                    break;
+                }
+                this_thread::sleep_for(chrono::milliseconds(10));
+            }
+        }
+    }
+}
+
 void Scheduler::debugProcessQueue() 
 {
     cout << "Estado da fila de processos:" << endl;
-    queue<Processos*> temp_queue = process_queue; // Cria uma cópia da fila para iteração
+    queue<Processos*> temp_queue = process_queue;
     while (!temp_queue.empty()) {
         Processos* process = temp_queue.front();
         temp_queue.pop();

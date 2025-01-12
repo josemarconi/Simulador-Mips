@@ -37,6 +37,7 @@ public:
         int actual_Instruction;
         Registers regs;
         string files;
+        int quantumTotal;
     };
 
     UnidadeControle uc;
@@ -54,6 +55,14 @@ public:
     void execute(RAM &ram, Disco &disco, int &clock);
     void block();
     void unblock();
+
+    struct SJFComparator 
+    {
+        bool operator()(const Processos* a, const Processos* b) 
+            {
+                return a->pcb.quantum > b->pcb.quantum; 
+            }
+    };
 
 private:
     mutex process_mutex;
