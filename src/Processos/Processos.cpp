@@ -93,7 +93,7 @@ void Processos::execute(RAM &ram, Disco &disco, int &clock)
             int total = 0;
             
             if (counter >= pcb.quantum) {
-                cout << endl << "--- PROCESSO BLOQUEADO, QUANTUM EXCEDIDO ---";
+                //cout << endl << "--- PROCESSO BLOQUEADO, QUANTUM EXCEDIDO ---";
                 pcb.actual_Instruction = PC / 4;
                 block();
                 break;
@@ -108,14 +108,15 @@ void Processos::execute(RAM &ram, Disco &disco, int &clock)
             counter++;
 
             aux = clock;
-
+            
+            /*
             cout << endl << "[Processo " << pcb.ID << "] Executando instrução:" 
                       << " PC=" << PC 
                       << " Opcode=" << decodedInstr.opcode 
                       << " Destino=R" << decodedInstr.destiny 
                       << " Valor1=" << decodedInstr.value1 
                       << " Valor2=" << decodedInstr.value2 << endl;
-
+            */
 
             uc.executePipeline(decodedInstr, pcb.regs, ram, PC, disco, clock);
             PC += 4;
@@ -125,17 +126,20 @@ void Processos::execute(RAM &ram, Disco &disco, int &clock)
             total = counter - anterior_counter;
             pcb.quantumTotal += total;
 
+            /*
             cout << "State:" << pcb.state << endl;
             cout << "Arquivo fonte: " << filename << endl;
             cout << "Quantum total utilizado: " << pcb.quantumTotal << endl;
             cout << "clock = " << clock << endl;
+            */
             anterior_counter = counter;
         }
         
         if (PC >= instrucoes.size() * 4) 
         {
             pcb.state = TERMINATED;
-            cout <<  endl << endl << "----------- Processo " << pcb.ID << " concluído" << "-----------"<< endl << endl << endl;
+            cout << endl << "----------- Processo " << pcb.ID << " concluído" << "-----------"<< endl;
+            cout << "Quantum total utilizado: " << pcb.quantumTotal;
             
         } 
     }

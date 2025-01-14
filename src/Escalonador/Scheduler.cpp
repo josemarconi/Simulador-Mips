@@ -14,8 +14,19 @@ Scheduler::Scheduler(RAM &ram, Disco &disco, vector<unique_ptr<Core>> &cores) : 
     createAndAddProcess(5, "data/instructions4.txt", "data/setRegisters.txt", ram, disco);
     createAndAddProcess(6, "data/instructions5.txt", "data/setRegisters.txt", ram, disco);
 
+    cout << endl << "Politica FCFS: " << endl;
     schedule_FCFS(ram, disco);
+    this_thread::sleep_for(chrono::milliseconds(10000));
+
+    cout << endl << "------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
+
+    cout << endl << "Politica SJF: " << endl;
     schedule_SJF(ram, disco);
+    this_thread::sleep_for(chrono::milliseconds(10000));
+
+    cout << endl << "------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
+
+    cout << endl << "Politica de Loteria: " << endl;
     schedule_Lottery(ram, disco);
 }
 
@@ -73,9 +84,7 @@ void Scheduler::schedule_FCFS(RAM &ram, Disco &disco)
                         process->pcb.quantum = std::numeric_limits<int>::max(); 
                     }
 
-                    cout << endl
-                         << endl;
-                    cout << "Processo " << process->pcb.ID << " sendo executado no core " << core->ID << endl;
+                    //cout << endl << "Processo " << process->pcb.ID << " sendo executado no core " << core->ID << endl;
 
                     core->setBusy(true);
                     threads.emplace_back(&Core::executeProcess, core.get(), process, std::ref(process_queue), std::ref(ram), std::ref(disco)).detach();
@@ -110,10 +119,8 @@ void Scheduler::schedule_SJF(RAM &ram, Disco &disco)
                         process->pcb.quantum = numeric_limits<int>::max();
                     }
 
-                    cout << endl
-                         << endl;
-                    cout << "Processo " << process->pcb.ID << " sendo executado no core " << core->ID << endl;
-
+                    //cout << endl << "Processo " << process->pcb.ID << " sendo executado no core " << core->ID << endl;
+                    
                     core->setBusy(true);
                     threads.emplace_back(&Core::executeProcess_SJF, core.get(), process, std::ref(sjf_queue), std::ref(ram), std::ref(disco)).detach();
                     break;
@@ -172,9 +179,9 @@ void Scheduler::schedule_Lottery(RAM &ram, Disco &disco)
                             winning_process->pcb.quantum = numeric_limits<int>::max();
                         }
 
-                        cout << endl
-                             << endl;
-                        cout << "Processo " << winning_process->pcb.ID << " sendo executado no core " << core->ID << endl;
+
+                        //cout << endl << "Processo " << winning_process->pcb.ID << " sendo executado no core " << core->ID << endl;
+                        
 
                         core->setBusy(true);
                         threads.emplace_back(&Core::executeProcess_Lottery, core.get(), winning_process, ref(lottery_queue), ref(ram), ref(disco)).detach();

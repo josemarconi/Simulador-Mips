@@ -20,6 +20,7 @@ void Core::executeProcess(Processos* process, queue<Processos*>& processQueue, R
         {
             case Processos::TERMINATED:
                 cout << endl <<  "Processo " << process->pcb.ID << " finalizado no Core " << ID << endl;
+                cout << "Clock <" << Clock << ">" << endl;
                 break;
             case Processos::BLOCK:
                 cout << endl << "Processo " << process->pcb.ID << " bloqueado no Core " << ID << endl;
@@ -56,6 +57,7 @@ void Core::executeProcess_SJF(Processos* process, priority_queue<Processos*, vec
         {
             case Processos::TERMINATED:
                 cout << endl <<  "Processo " << process->pcb.ID << " finalizado no Core " << ID << endl;
+                cout << "Clock <" << Clock << ">" << endl;
                 break;
             case Processos::BLOCK:
                 cout << endl << "Processo " << process->pcb.ID << " bloqueado no Core " << ID << endl;
@@ -92,6 +94,7 @@ void Core::executeProcess_Lottery(Processos* process, vector<Processos*>& lotter
         {
             case Processos::TERMINATED:
                 cout << endl <<  "Processo " << process->pcb.ID << " finalizado no Core " << ID << endl;
+                cout << "Clock <" << Clock << ">" << endl;
                 break;
             case Processos::BLOCK:
                 cout << endl << "Processo " << process->pcb.ID << " bloqueado no Core " << ID << endl;

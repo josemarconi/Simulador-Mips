@@ -16,10 +16,6 @@ int main() {
 
     Scheduler scheduler(ram, disco, cores);
 
-    cout << endl << endl << endl;
-
-    ram.displayI();
-
     cout << endl << "Todos os processos foram finalizados." << endl;
 
     return 0;
