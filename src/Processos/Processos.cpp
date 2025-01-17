@@ -67,7 +67,7 @@ void Processos::StructionsLoad(const string& arquivoInstrucoes) {
         pcb.lottery_tickets = 1;
     }
 
-    cout << endl << "Priority" << pcb.priority << endl;
+    //cout << endl << "Priority" << pcb.priority << endl;
 
     arquivo.close();
 }
