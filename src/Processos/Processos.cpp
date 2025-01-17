@@ -8,6 +8,7 @@ Processos::Processos(int PCB_ID, const std::string &files) {
     filename = files;
     pcb.quantumTotal = 0;
     pcb.lottery_tickets = 0;
+    pcb.priority = 0;
 }
 
 void Processos::RegistersLoad(const string& arquivoRegistros, RAM& ram, Disco& disco){
@@ -22,7 +23,6 @@ void Processos::StructionsLoad(const string& arquivoInstrucoes) {
 
     instrucoes.clear();
     string linha;
-    int cont = 0;
 
     while (getline(arquivo, linha)) {
         istringstream ss(linha);
@@ -34,14 +34,14 @@ void Processos::StructionsLoad(const string& arquivoInstrucoes) {
         ss >> reg1 >> virgula >> reg2 >> virgula >> reg3;
 
         Opcode opcode;
-        if (opcodeStr == "ADD") opcode = ADD;
-        else if (opcodeStr == "SUB") opcode = SUB;
-        else if (opcodeStr == "AND") opcode = AND;
-        else if (opcodeStr == "OR") opcode = OR;
-        else if (opcodeStr == "STORE") opcode = STORE;
-        else if (opcodeStr == "LOAD") opcode = LOAD;
-        else if (opcodeStr == "ENQ") opcode = ENQ;
-        else if (opcodeStr == "IF_igual") opcode = IF_igual;
+        if (opcodeStr == "ADD"){ opcode = ADD; pcb.priority += 3;}
+        else if (opcodeStr == "SUB") {opcode = SUB; pcb.priority += 3;}
+        else if (opcodeStr == "AND") {opcode = AND; pcb.priority += 3;}
+        else if (opcodeStr == "OR") {opcode = OR; pcb.priority += 3;}
+        else if (opcodeStr == "STORE") {opcode = STORE; pcb.priority += 2;}
+        else if (opcodeStr == "LOAD") {opcode = LOAD; pcb.priority += 2;}
+        else if (opcodeStr == "ENQ") {opcode = ENQ; pcb.priority += 2;}
+        else if (opcodeStr == "IF_igual") {opcode = IF_igual; pcb.priority += 2;}
         else {
             cerr << "Instrução inválida ignorada: " << opcodeStr << endl;
             continue;
@@ -49,24 +49,25 @@ void Processos::StructionsLoad(const string& arquivoInstrucoes) {
 
         Instruction instrucao(opcode, reg1, reg2, reg3);
         instrucoes.push_back(instrucao);
-        cont++;
     }
 
-    if(cont >= 1 && cont <= 3)
+    if(pcb.priority > 0  && pcb.priority <= 10)
     {
-        pcb.quantum = 15;
+        pcb.quantum = 10;
         pcb.lottery_tickets = 5;
     }
-    else if(cont >=4 && cont <= 8)
+    else if(pcb.priority >=11 && pcb.priority <= 20)
     {
-        pcb.quantum = 20;
+        pcb.quantum = 15;
         pcb.lottery_tickets = 3;
     }
-    else if(cont >= 9)
+    else if(pcb.priority >= 21)
     {
-        pcb.quantum = 25;
+        pcb.quantum = 20;
         pcb.lottery_tickets = 1;
     }
+
+    cout << endl << "Priority" << pcb.priority << endl;
 
     arquivo.close();
 }
@@ -76,6 +77,7 @@ void Processos::execute(RAM &ram, Disco &disco, int &clock)
     pcb.state = RUNNING;
 
     int PC = pcb.actual_Instruction * 4;
+    clock++;
 
     int counter = 0;
     int aux = 0;
@@ -109,14 +111,12 @@ void Processos::execute(RAM &ram, Disco &disco, int &clock)
 
             aux = clock;
             
-            /*
             cout << endl << "[Processo " << pcb.ID << "] Executando instrução:" 
                       << " PC=" << PC 
                       << " Opcode=" << decodedInstr.opcode 
                       << " Destino=R" << decodedInstr.destiny 
                       << " Valor1=" << decodedInstr.value1 
                       << " Valor2=" << decodedInstr.value2 << endl;
-            */
 
             uc.executePipeline(decodedInstr, pcb.regs, ram, PC, disco, clock);
             PC += 4;
@@ -126,12 +126,12 @@ void Processos::execute(RAM &ram, Disco &disco, int &clock)
             total = counter - anterior_counter;
             pcb.quantumTotal += total;
 
-            /*
+            
             cout << "State:" << pcb.state << endl;
             cout << "Arquivo fonte: " << filename << endl;
             cout << "Quantum total utilizado: " << pcb.quantumTotal << endl;
             cout << "clock = " << clock << endl;
-            */
+            
             anterior_counter = counter;
         }
         

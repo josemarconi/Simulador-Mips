@@ -41,6 +41,7 @@ public:
         string files;
         int quantumTotal;
         int lottery_tickets;
+        int priority;
     };
 
     UnidadeControle uc;
