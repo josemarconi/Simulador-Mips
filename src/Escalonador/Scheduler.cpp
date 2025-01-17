@@ -15,21 +15,35 @@ Scheduler::Scheduler(RAM &ram, Disco &disco, vector<unique_ptr<Core>> &cores) : 
     createAndAddProcess(6, "data/instructions5.txt", "data/setRegisters.txt", ram, disco);
 
     
+    auto start_fcfs = std::chrono::high_resolution_clock::now();
     cout << endl << "Politica FCFS: " << endl;
     schedule_FCFS(ram, disco);
+    auto end_fcfs = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duration_fcfs = end_fcfs - start_fcfs;
+    std::cout << "Tempo de execução do FCFS: " << duration_fcfs.count() << " segundos" << std::endl;
     this_thread::sleep_for(chrono::milliseconds(10000));
     
     cout << endl << "------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-
+    
     cout << endl << "Politica SJF: " << endl;
+    auto start_sjf = std::chrono::high_resolution_clock::now();
     schedule_SJF(ram, disco);
+    auto end_sjf = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duration_sjf = end_sjf - start_sjf;
+    std::cout << "Tempo de execução do SJF: " << duration_sjf.count() << " segundos" << std::endl;
     this_thread::sleep_for(chrono::milliseconds(10000));
 
     
     cout << endl << "------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
 
     cout << endl << "Politica de Loteria: " << endl;
+    auto startlottery = std::chrono::high_resolution_clock::now();
     schedule_Lottery(ram, disco);
+    auto endlottery = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> durationlottery = endlottery - startlottery;
+    std::cout << "Tempo de execução do Lottery: " << durationlottery.count() << " segundos" << std::endl;
+    this_thread::sleep_for(chrono::milliseconds(10000));
+    
 }
 
 void Scheduler::createAndAddProcess(int PCB_ID, const string &arquivoInstrucoes, const string &arquivoRegistros, RAM &ram, Disco &disco)

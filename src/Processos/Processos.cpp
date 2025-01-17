@@ -76,12 +76,13 @@ void Processos::execute(RAM &ram, Disco &disco, int &clock)
 {   
     pcb.state = RUNNING;
 
-    int PC = pcb.actual_Instruction * 4;
-    clock++;
-
     int counter = 0;
     int aux = 0;
     int anterior_counter = 0;
+
+    int PC = pcb.actual_Instruction * 4;
+    clock++;
+    counter++;
 
     try {
         for (size_t i = 0; i < instrucoes.size(); ++i) {
