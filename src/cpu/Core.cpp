@@ -2,9 +2,9 @@
 
 mutex coutMutex;
 
-Core::Core(int id, RAM& ram, Disco& disco) : ID(id), ram(ram), disco(disco), PC(0), Clock(0), is_busy(false){}
+Core::Core(int id, RAM& ram, Disco& disco, Cache& cache) : ID(id), ram(ram), disco(disco), cache(cache), PC(0), Clock(0), is_busy(false){}
 
-void Core::executeProcess(Processos* process, queue<Processos*>& processQueue, RAM& ram, Disco& disco) 
+void Core::executeProcess(Processos* process, queue<Processos*>& processQueue, RAM& ram, Disco& disco, Cache& cache) 
 {
     lock_guard<mutex> lock(coutMutex);
     try {
@@ -14,7 +14,7 @@ void Core::executeProcess(Processos* process, queue<Processos*>& processQueue, R
             return;
         }
 
-        process->execute(ram, disco, Clock);
+        process->execute(ram, disco, cache, Clock);
 
         switch (process->pcb.state) 
         {
@@ -40,7 +40,7 @@ void Core::executeProcess(Processos* process, queue<Processos*>& processQueue, R
     setBusy(false);
 }
 
-void Core::executeProcess_SJF(Processos* process, priority_queue<Processos*, vector<Processos*>, Processos::SJFComparator>& processQueue, RAM& ram, Disco& disco)
+void Core::executeProcess_SJF(Processos* process, priority_queue<Processos*, vector<Processos*>, Processos::SJFComparator>& processQueue, RAM& ram, Disco& disco, Cache& cache)
 {
     lock_guard<mutex> lock(coutMutex);
 
@@ -51,7 +51,7 @@ void Core::executeProcess_SJF(Processos* process, priority_queue<Processos*, vec
             return;
         }
 
-        process->execute(ram, disco, Clock);
+        process->execute(ram, disco, cache, Clock);
 
         switch (process->pcb.state) 
         {
@@ -77,7 +77,7 @@ void Core::executeProcess_SJF(Processos* process, priority_queue<Processos*, vec
     setBusy(false);
 }
 
-void Core::executeProcess_Lottery(Processos* process, vector<Processos*>& lottery_queue, RAM& ram, Disco& disco)
+void Core::executeProcess_Lottery(Processos* process, vector<Processos*>& lottery_queue, RAM& ram, Disco& disco, Cache& cache)
 {
     lock_guard<mutex> lock(coutMutex);
 
@@ -88,7 +88,7 @@ void Core::executeProcess_Lottery(Processos* process, vector<Processos*>& lotter
             return;
         }
 
-        process->execute(ram, disco, Clock);
+        process->execute(ram, disco, cache, Clock);
 
         switch (process->pcb.state) 
         {

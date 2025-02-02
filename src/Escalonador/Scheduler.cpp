@@ -1,49 +1,52 @@
 #include "../includes/Scheduler.hpp"
 
-Scheduler::Scheduler(RAM &ram, Disco &disco, vector<unique_ptr<Core>> &cores) : ram(ram), disco(disco), cores(cores)
+Scheduler::Scheduler(RAM &ram, Disco &disco, vector<unique_ptr<Core>> &cores, Cache& cache) : ram(ram), disco(disco), cores(cores), cache(cache)
 {
     for (int i = 1; i < 3; i++)
     {
-        cores.emplace_back(make_unique<Core>(i, ram, disco));
+        cores.emplace_back(make_unique<Core>(i, ram, disco, cache));
     }
 
-    createAndAddProcess(1, "data/instructions0.txt", "data/setRegisters.txt", ram, disco);
-    createAndAddProcess(2, "data/instructions1.txt", "data/setRegisters.txt", ram, disco);
-    createAndAddProcess(3, "data/instructions2.txt", "data/setRegisters.txt", ram, disco);
-    createAndAddProcess(4, "data/instructions3.txt", "data/setRegisters.txt", ram, disco);
-    createAndAddProcess(5, "data/instructions4.txt", "data/setRegisters.txt", ram, disco);
-    createAndAddProcess(6, "data/instructions5.txt", "data/setRegisters.txt", ram, disco);
+    vector<string> arquivosInstrucoes = {
+        "data/instructions0.txt",
+        "data/instructions1.txt",
+        "data/instructions2.txt",
+        "data/instructions3.txt",
+        "data/instructions4.txt",
+        "data/instructions5.txt"
+    };
 
-    
-    auto start_fcfs = std::chrono::high_resolution_clock::now();
+    createAndAddProcesses(arquivosInstrucoes, "data/setRegisters.txt", ram, disco);
+
+    /*
+    auto start_fcfs = chrono::high_resolution_clock::now();
     cout << endl << "Politica FCFS: " << endl;
-    schedule_FCFS(ram, disco);
-    auto end_fcfs = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> duration_fcfs = end_fcfs - start_fcfs;
-    std::cout << "Tempo de execução do FCFS: " << duration_fcfs.count() << " segundos" << std::endl;
+    schedule_FCFS(ram, disco, cache);
+    auto end_fcfs = chrono::high_resolution_clock::now();
+    chrono::duration<double> duration_fcfs = end_fcfs - start_fcfs;
+    cout << "Tempo de execução do FCFS: " << duration_fcfs.count() << " segundos" << endl;
     this_thread::sleep_for(chrono::milliseconds(10000));
     
     cout << endl << "------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
+    
     
     cout << endl << "Politica SJF: " << endl;
-    auto start_sjf = std::chrono::high_resolution_clock::now();
-    schedule_SJF(ram, disco);
-    auto end_sjf = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> duration_sjf = end_sjf - start_sjf;
-    std::cout << "Tempo de execução do SJF: " << duration_sjf.count() << " segundos" << std::endl;
+    auto start_sjf = chrono::high_resolution_clock::now();
+    schedule_SJF(ram, disco, cache);
+    auto end_sjf = chrono::high_resolution_clock::now();
+    chrono::duration<double> duration_sjf = end_sjf - start_sjf;
+    cout << "Tempo de execução do SJF: " << duration_sjf.count() << " segundos" << endl;
     this_thread::sleep_for(chrono::milliseconds(10000));
-
     
     cout << endl << "------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-
+    */
     cout << endl << "Politica de Loteria: " << endl;
-    auto startlottery = std::chrono::high_resolution_clock::now();
-    schedule_Lottery(ram, disco);
-    auto endlottery = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> durationlottery = endlottery - startlottery;
-    std::cout << "Tempo de execução do Lottery: " << durationlottery.count() << " segundos" << std::endl;
+    auto startlottery = chrono::high_resolution_clock::now();
+    schedule_Lottery(ram, disco, cache);
+    auto endlottery = chrono::high_resolution_clock::now();
+    chrono::duration<double> durationlottery = endlottery - startlottery;
+    cout << "Tempo de execução do Lottery: " << durationlottery.count() << " segundos" << endl;
     this_thread::sleep_for(chrono::milliseconds(10000));
-    
 }
 
 void Scheduler::createAndAddProcess(int PCB_ID, const string &arquivoInstrucoes, const string &arquivoRegistros, RAM &ram, Disco &disco)
@@ -77,7 +80,28 @@ void Scheduler::createAndAddProcess(int PCB_ID, const string &arquivoInstrucoes,
     }
 }
 
-void Scheduler::schedule_FCFS(RAM &ram, Disco &disco)
+void Scheduler::createAndAddProcesses(const vector<string>& arquivosInstrucoes, const string& arquivoRegistros, RAM& ram, Disco& disco)
+{
+    auto start = chrono::high_resolution_clock::now();
+
+    vector<vector<string>> grupos = Processos::agruparArquivosSimilares(arquivosInstrucoes);
+
+    auto end = chrono::high_resolution_clock::now();
+    chrono::duration<double> duration = end - start;
+    cout << "Tempo para agrupar os processos: " << duration.count() << " segundos" << endl;
+
+
+    int PCB_ID = 1;
+    for (const auto& grupo : grupos)
+    {
+        for (const auto& arquivoInstrucoes : grupo)
+        {
+            createAndAddProcess(PCB_ID++, arquivoInstrucoes, arquivoRegistros, ram, disco);
+        }
+    }
+}
+
+void Scheduler::schedule_FCFS(RAM &ram, Disco &disco, Cache &cache)
 {
     unique_lock<mutex> lock(scheduler_mutex);
 
@@ -97,13 +121,13 @@ void Scheduler::schedule_FCFS(RAM &ram, Disco &disco)
 
                     if (process_queue.empty())
                     {
-                        process->pcb.quantum = std::numeric_limits<int>::max(); 
+                        process->pcb.quantum = numeric_limits<int>::max(); 
                     }
 
                     //cout << endl << "Processo " << process->pcb.ID << " sendo executado no core " << core->ID << endl;
 
                     core->setBusy(true);
-                    threads.emplace_back(&Core::executeProcess, core.get(), process, std::ref(process_queue), std::ref(ram), std::ref(disco)).detach();
+                    threads.emplace_back(&Core::executeProcess, core.get(), process, ref(process_queue), ref(ram), ref(disco), ref(cache)).detach();
                     break;
                 }
                 this_thread::sleep_for(chrono::milliseconds(10));
@@ -112,7 +136,7 @@ void Scheduler::schedule_FCFS(RAM &ram, Disco &disco)
     }
 }
 
-void Scheduler::schedule_SJF(RAM &ram, Disco &disco)
+void Scheduler::schedule_SJF(RAM &ram, Disco &disco, Cache &cache)
 {
     unique_lock<mutex> lock(scheduler_mutex);
 
@@ -138,7 +162,7 @@ void Scheduler::schedule_SJF(RAM &ram, Disco &disco)
                     //cout << endl << "Processo " << process->pcb.ID << " sendo executado no core " << core->ID << endl;
                     
                     core->setBusy(true);
-                    threads.emplace_back(&Core::executeProcess_SJF, core.get(), process, std::ref(sjf_queue), std::ref(ram), std::ref(disco)).detach();
+                    threads.emplace_back(&Core::executeProcess_SJF, core.get(), process, ref(sjf_queue), ref(ram), ref(disco), ref(cache)).detach();
                     break;
                 }
                 this_thread::sleep_for(chrono::milliseconds(10));
@@ -147,7 +171,7 @@ void Scheduler::schedule_SJF(RAM &ram, Disco &disco)
     }
 }
 
-void Scheduler::schedule_Lottery(RAM &ram, Disco &disco)
+void Scheduler::schedule_Lottery(RAM &ram, Disco &disco, Cache &cache)
 {
     unique_lock<mutex> lock(scheduler_mutex);
 
@@ -200,7 +224,7 @@ void Scheduler::schedule_Lottery(RAM &ram, Disco &disco)
                         
 
                         core->setBusy(true);
-                        threads.emplace_back(&Core::executeProcess_Lottery, core.get(), winning_process, ref(lottery_queue), ref(ram), ref(disco)).detach();
+                        threads.emplace_back(&Core::executeProcess_Lottery, core.get(), winning_process, ref(lottery_queue), ref(ram), ref(disco), ref(cache)).detach();
                         break;
                     }
                 }

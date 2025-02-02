@@ -20,9 +20,10 @@ namespace fs = std::filesystem;
 class Scheduler
 {
 public:
-    Scheduler(RAM& ram, Disco& disco, vector<unique_ptr<Core>>& cores);
+    Scheduler(RAM& ram, Disco& disco, vector<unique_ptr<Core>>& cores, Cache& cache);
 
     void createAndAddProcess(int PCB_ID, const std::string& arquivoInstrucoes, const std::string& arquivoRegistros, RAM& ram, Disco& disco);    
+    void createAndAddProcesses(const vector<string>& arquivosInstrucoes, const string& arquivoRegistros, RAM& ram, Disco& disco);
     void debugProcessQueue();
     
 private:
@@ -33,12 +34,13 @@ private:
     RAM& ram;
     Disco& disco;
     vector<unique_ptr<Core>>& cores;
+    Cache& cache;
 
     mutex scheduler_mutex;
 
-    void schedule_FCFS(RAM& ram, Disco& disco);
-    void schedule_SJF(RAM& ram, Disco& disco);
-    void schedule_Lottery(RAM& ram, Disco& disco);
+    void schedule_FCFS(RAM& ram, Disco& disco, Cache& cache);
+    void schedule_SJF(RAM& ram, Disco& disco, Cache& cache);
+    void schedule_Lottery(RAM& ram, Disco& disco, Cache& cache);
 };
 
 #endif
