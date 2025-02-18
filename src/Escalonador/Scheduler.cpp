@@ -60,7 +60,7 @@ Scheduler::Scheduler(RAM &ram, Disco &disco, vector<unique_ptr<Core>> &cores, Ca
     auto end_sjf = chrono::high_resolution_clock::now();
     chrono::duration<double> duration_sjf = end_sjf - start_sjf;
     cout << "Tempo de execução total das buscas: " << durationTotal << " segundos" << endl;
-    cout << "Tempo de execução do SJF: " << duration_sjf.count() - durationTotal << " segundos" << endl;
+    cout << "Tempo de execução do SJF: " << duration_sjf.count()-durationTotal << " segundos" << endl;
     this_thread::sleep_for(chrono::milliseconds(10000));
     
     /*
@@ -158,7 +158,7 @@ void Scheduler::schedule_FCFS(RAM &ram, Disco &disco, Cache &cache)
                     threads.emplace_back(&Core::executeProcess, core.get(), process, ref(process_queue), ref(ram), ref(disco), ref(cache)).detach();
                     break;
                 }
-                this_thread::sleep_for(chrono::milliseconds(10));
+                //this_thread::sleep_for(chrono::milliseconds(1));
             }
         }
     }
