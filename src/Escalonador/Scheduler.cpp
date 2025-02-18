@@ -1,10 +1,10 @@
 #include "../includes/Scheduler.hpp"
 
-Scheduler::Scheduler(RAM &ram, Disco &disco, vector<unique_ptr<Core>> &cores) : ram(ram), disco(disco), cores(cores)
+Scheduler::Scheduler(RAM &ram, Disco &disco, vector<unique_ptr<Core>> &cores, Cache& cache) : ram(ram), disco(disco), cores(cores), cache(cache)
 {
     for (int i = 1; i < 3; i++)
     {
-        cores.emplace_back(make_unique<Core>(i, ram, disco));
+        cores.emplace_back(make_unique<Core>(i, ram, disco, cache));
     }
 
     vector<string> arquivosInstrucoes = {
@@ -36,7 +36,6 @@ Scheduler::Scheduler(RAM &ram, Disco &disco, vector<unique_ptr<Core>> &cores) : 
         return binary_process_map[a]->pcb.quantum < binary_process_map[b]->pcb.quantum;
     });
 
-
     /*
     auto start_fcfs = chrono::high_resolution_clock::now();
     cout << endl << "Politica FCFS: " << endl;
@@ -48,6 +47,7 @@ Scheduler::Scheduler(RAM &ram, Disco &disco, vector<unique_ptr<Core>> &cores) : 
     
     cout << endl << "------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
     */
+  
     float durationTotal = 0;
     cout << endl << "Politica SJF: " << endl;
     auto start_sjf = chrono::high_resolution_clock::now();
@@ -59,8 +59,6 @@ Scheduler::Scheduler(RAM &ram, Disco &disco, vector<unique_ptr<Core>> &cores) : 
     this_thread::sleep_for(chrono::milliseconds(10000));
     
     /*
-    cout << endl << "------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-    
     cout << endl << "Politica de Loteria: " << endl;
     auto startlottery = chrono::high_resolution_clock::now();
     schedule_Lottery(ram, disco, cache);
@@ -68,6 +66,7 @@ Scheduler::Scheduler(RAM &ram, Disco &disco, vector<unique_ptr<Core>> &cores) : 
     chrono::duration<double> durationlottery = endlottery - startlottery;
     cout << "Tempo de execução do Lottery: " << durationlottery.count() << " segundos" << endl;
     this_thread::sleep_for(chrono::milliseconds(10000));
+
     */
 }
 
@@ -125,7 +124,6 @@ void Scheduler::createAndAddProcesses(const vector<string>& arquivosInstrucoes, 
 }
 
 
-
 void Scheduler::schedule_FCFS(RAM &ram, Disco &disco, Cache &cache)
 {
     unique_lock<mutex> lock(scheduler_mutex);
@@ -146,15 +144,13 @@ void Scheduler::schedule_FCFS(RAM &ram, Disco &disco, Cache &cache)
 
                     if (process_queue.empty())
                     {
-                        process->pcb.quantum = std::numeric_limits<int>::max(); // Define um quantum muito grande
+                        process->pcb.quantum = numeric_limits<int>::max(); 
                     }
 
-                    cout << endl
-                         << endl;
-                    cout << "Processo " << process->pcb.ID << " sendo executado no core " << core->ID << endl;
+                    //cout << endl << "Processo " << process->pcb.ID << " sendo executado no core " << core->ID << endl;
 
                     core->setBusy(true);
-                    threads.emplace_back(&Core::executeProcess, core.get(), process, std::ref(process_queue), std::ref(ram), std::ref(disco)).detach();
+                    threads.emplace_back(&Core::executeProcess, core.get(), process, ref(process_queue), ref(ram), ref(disco), ref(cache)).detach();
                     break;
                 }
                 this_thread::sleep_for(chrono::milliseconds(10));
@@ -164,6 +160,7 @@ void Scheduler::schedule_FCFS(RAM &ram, Disco &disco, Cache &cache)
 }
 
 void Scheduler::schedule_SJF(RAM &ram, Disco &disco, Cache &cache, float &durationTotal) {
+
     unique_lock<mutex> lock(scheduler_mutex);
 
     vector<thread> threads;
@@ -184,6 +181,7 @@ void Scheduler::schedule_SJF(RAM &ram, Disco &disco, Cache &cache, float &durati
                         process->pcb.quantum = numeric_limits<int>::max();
                     }
 
+
                     cout << "Processo " << process->pcb.ID << " sendo executado no core " 
                          << core->ID  << endl;
 
@@ -192,6 +190,12 @@ void Scheduler::schedule_SJF(RAM &ram, Disco &disco, Cache &cache, float &durati
                                          ref(binary_indices), ref(binary_process_map),
                                          ref(ram), ref(disco), ref(cache), ref(durationTotal)).detach();
                     
+
+                    //cout << endl << "Processo " << process->pcb.ID << " sendo executado no core " << core->ID << endl;
+                    
+                    core->setBusy(true);
+                    threads.emplace_back(&Core::executeProcess_SJF, core.get(), process, ref(sjf_queue), ref(ram), ref(disco), ref(cache)).detach();
+                    
                     break;
                 }
                 this_thread::sleep_for(chrono::milliseconds(10));
@@ -199,8 +203,6 @@ void Scheduler::schedule_SJF(RAM &ram, Disco &disco, Cache &cache, float &durati
         }
     }
 }
-
-
 
 void Scheduler::schedule_Lottery(RAM &ram, Disco &disco, Cache &cache)
 {
@@ -245,12 +247,17 @@ void Scheduler::schedule_Lottery(RAM &ram, Disco &disco, Cache &cache)
                     {
                         lottery_queue.erase(remove(lottery_queue.begin(), lottery_queue.end(), winning_process), lottery_queue.end());
 
-                        cout << endl
-                             << endl;
-                        cout << "Processo " << winning_process->pcb.ID << " sendo executado no core " << core->ID << endl;
+                        if (lottery_queue.empty())
+                        {
+                            winning_process->pcb.quantum = numeric_limits<int>::max();
+                        }
+
+
+                        //cout << endl << "Processo " << winning_process->pcb.ID << " sendo executado no core " << core->ID << endl;
+                        
 
                         core->setBusy(true);
-                        threads.emplace_back(&Core::executeProcess_Lottery, core.get(), winning_process, ref(lottery_queue), ref(ram), ref(disco)).detach();
+                        threads.emplace_back(&Core::executeProcess_Lottery, core.get(), winning_process, ref(lottery_queue), ref(ram), ref(disco), ref(cache)).detach();
                         break;
                     }
                 }

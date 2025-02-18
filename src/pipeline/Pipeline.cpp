@@ -31,6 +31,7 @@ void Pipeline::MemoryAccess(const DecodedInstruction& decoded, int resultado, Re
 void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& ram, int& PC, Disco& disco, int& Clock) {
     switch (decoded.opcode) {
         case ADD: {
+            Clock++;
             int resultado = ula.exec(decoded.value1, decoded.value2, ADD);
             Clock++;
             MemoryAccess(decoded, resultado, regs, Clock);
@@ -39,6 +40,7 @@ void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& 
             break;
         }
         case SUB: {
+            Clock++;
             int resultado = ula.exec(decoded.value1, decoded.value2, SUB);
             Clock++;
             MemoryAccess(decoded, resultado, regs, Clock);
@@ -47,6 +49,7 @@ void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& 
             break;
         }
         case AND: {
+            Clock++;
             int resultado = ula.exec(decoded.value1, decoded.value2, AND);
             Clock++;
             MemoryAccess(decoded, resultado, regs, Clock);
@@ -55,6 +58,7 @@ void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& 
             break;
         }
         case OR: {
+            Clock++;
             int resultado = ula.exec(decoded.value1, decoded.value2, OR);
             Clock++;
             MemoryAccess(decoded, resultado, regs, Clock);
@@ -79,6 +83,7 @@ void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& 
             break;
         }
         case MULT: {
+            Clock++;
             int resultado = ula.exec(decoded.value1, decoded.value2, MULT);
             Clock++;
             MemoryAccess(decoded, resultado, regs, Clock);
@@ -88,6 +93,7 @@ void Pipeline::Execute(const DecodedInstruction& decoded, Registers& regs, RAM& 
         }
         case DIV: {
             if (decoded.value2 != 0) {
+                Clock++;
                 int resultado = ula.exec(decoded.value1, decoded.value2, DIV);
                 Clock++;
                 MemoryAccess(decoded, resultado, regs, Clock);

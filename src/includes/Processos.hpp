@@ -9,6 +9,8 @@
 #include <sstream>
 #include <stdexcept>
 #include <condition_variable>
+#include <map>
+#include <algorithm>
 
 #include "Instruction.hpp"
 #include "Registers.hpp"
@@ -16,13 +18,11 @@
 #include "RAM.hpp"
 #include "Disco.hpp"
 #include "UnidadeControle.hpp"
-
-
+#include "Cache.hpp" // Adicionado
 
 class Processos
 {
 public:
-
     enum State
     {
         READY,
@@ -41,9 +41,11 @@ public:
         string files;
         int quantumTotal;
         int lottery_tickets;
+        int priority;
     };
 
     UnidadeControle uc;
+    Cache cache; // Adicionado
 
     PCB pcb;
     vector<Instruction> instrucoes;
@@ -52,20 +54,22 @@ public:
     Processos(int PCB_ID, const string &files);
 
     void RegistersLoad(const string& arquivoRegistros, RAM& ram, Disco& disco);
-
     void StructionsLoad(const string& arquivoInstrucoes);
 
-    void execute(RAM &ram, Disco &disco, int &clock);
+    void execute(RAM &ram, Disco &disco, Cache& cache, int &clock);
     void block();
     void unblock();
 
     struct SJFComparator 
     {
         bool operator()(const Processos* a, const Processos* b) 
-            {
-                return a->pcb.quantum > b->pcb.quantum; 
-            }
+        {
+            return a->pcb.quantum > b->pcb.quantum; 
+        }
     };
+
+    static double calcularSimilaridade(const vector<Instruction>& instrucoes1, const vector<Instruction>& instrucoes2);
+    static vector<vector<string>> agruparArquivosSimilares(const vector<string>& arquivosInstrucoes);
 
 private:
     mutex process_mutex;

@@ -2,9 +2,9 @@
 
 mutex coutMutex;
 
-Core::Core(int id, RAM &ram, Disco &disco, Cache &cache) : ID(id), ram(ram), disco(disco), cache(cache), PC(0), Clock(0), is_busy(false) {}
+Core::Core(int id, RAM& ram, Disco& disco, Cache& cache) : ID(id), ram(ram), disco(disco), cache(cache), PC(0), Clock(0), is_busy(false){}
 
-void Core::executeProcess(Processos *process, queue<Processos *> &processQueue, RAM &ram, Disco &disco, Cache &cache)
+void Core::executeProcess(Processos* process, queue<Processos*>& processQueue, RAM& ram, Disco& disco, Cache& cache) 
 {
     lock_guard<mutex> lock(coutMutex);
     try
@@ -15,7 +15,7 @@ void Core::executeProcess(Processos *process, queue<Processos *> &processQueue, 
             return;
         }
 
-        process->execute(ram, disco, Clock);
+        process->execute(ram, disco, cache, Clock);
 
         switch (process->pcb.state)
         {
@@ -57,7 +57,7 @@ void Core::executeProcess_SJF(Processos *process, vector<int> &binary_indices, u
             return;
         }
 
-        process->execute(ram, disco, Clock);
+        process->execute(ram, disco, cache, Clock);
 
         switch (process->pcb.state)
         {
@@ -120,7 +120,7 @@ void Core::executeProcess_Lottery(Processos *process, vector<Processos *> &lotte
             return;
         }
 
-        process->execute(ram, disco, Clock);
+        process->execute(ram, disco, cache, Clock);
 
         switch (process->pcb.state)
         {
