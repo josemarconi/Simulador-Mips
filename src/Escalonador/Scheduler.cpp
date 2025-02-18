@@ -190,12 +190,6 @@ void Scheduler::schedule_SJF(RAM &ram, Disco &disco, Cache &cache, float &durati
                                          ref(binary_indices), ref(binary_process_map),
                                          ref(ram), ref(disco), ref(cache), ref(durationTotal)).detach();
                     
-
-                    //cout << endl << "Processo " << process->pcb.ID << " sendo executado no core " << core->ID << endl;
-                    
-                    core->setBusy(true);
-                    threads.emplace_back(&Core::executeProcess_SJF, core.get(), process, ref(sjf_queue), ref(ram), ref(disco), ref(cache)).detach();
-                    
                     break;
                 }
                 this_thread::sleep_for(chrono::milliseconds(10));

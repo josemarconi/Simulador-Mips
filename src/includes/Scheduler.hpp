@@ -18,7 +18,6 @@ namespace fs = std::filesystem;
 
 #include "Processos.hpp"
 #include "Core.hpp"
-#include "Cache.hpp"
 
 class Scheduler
 {
@@ -41,7 +40,6 @@ private:
     RAM& ram;
     Disco& disco;
     vector<unique_ptr<Core>>& cores;
-    Cache& cache;
 
     mutex scheduler_mutex;
 
