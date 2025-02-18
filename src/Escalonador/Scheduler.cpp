@@ -126,7 +126,7 @@ void Scheduler::createAndAddProcesses(const vector<string>& arquivosInstrucoes, 
 
 
 
-void Scheduler::schedule_FCFS(RAM &ram, Disco &disco)
+void Scheduler::schedule_FCFS(RAM &ram, Disco &disco, Cache &cache)
 {
     unique_lock<mutex> lock(scheduler_mutex);
 

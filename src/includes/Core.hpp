@@ -8,6 +8,7 @@
 #include "Disco.hpp"
 #include "Pipeline.hpp"
 #include "Processos.hpp"
+#include "Cache.hpp"
 #include <mutex>
 #include <queue>
 
