@@ -24,7 +24,12 @@ Scheduler::Scheduler(RAM &ram, Disco &disco, vector<unique_ptr<Core>> &cores, Ca
         sjf_queue.pop();
         
         // Converter índice para binário
-        int binary_index = stoi(bitset<3>(index).to_string(), nullptr, 2);
+        int binary_index = stoi(bitset<8>(index).to_string(), nullptr, 2);
+        
+        cout << "Processo: " << binary_index << " | "; 
+        string binary_index_str = bitset<8>(binary_index).to_string();
+        cout << "Índice binário: " << binary_index_str << endl;
+
         binary_process_map[binary_index] = process;
         binary_indices.push_back(binary_index);
         
@@ -182,8 +187,11 @@ void Scheduler::schedule_SJF(RAM &ram, Disco &disco, Cache &cache, float &durati
                     }
 
 
-                    cout << "Processo " << process->pcb.ID << " sendo executado no core " 
+                    string binary_index_str = bitset<8>(binary_index).to_string();
+
+                    cout << "Processo " << binary_index_str << " sendo executado no core " 
                          << core->ID  << endl;
+
 
                     core->setBusy(true);
                     threads.emplace_back(&Core::executeProcess_SJF, core.get(), process, 
