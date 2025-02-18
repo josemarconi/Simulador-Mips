@@ -11,6 +11,8 @@
 #include <iostream>
 #include <algorithm>
 #include <random>
+#include <bitset>
+#include <unordered_map>
 
 namespace fs = std::filesystem;
 
@@ -29,6 +31,8 @@ private:
     queue<Processos*> process_queue;
     priority_queue<Processos*, vector<Processos*>, Processos::SJFComparator> sjf_queue;
     vector<Processos*> lottery_queue;
+    unordered_map<int, Processos*> binary_process_map;
+    vector<int> binary_indices;
 
     RAM& ram;
     Disco& disco;
@@ -36,9 +40,9 @@ private:
 
     mutex scheduler_mutex;
 
-    void schedule_FCFS(RAM& ram, Disco& disco);
-    void schedule_SJF(RAM& ram, Disco& disco);
-    void schedule_Lottery(RAM& ram, Disco& disco);
+    void schedule_FCFS(RAM& ram, Disco& disco, Cache& cache);
+    void schedule_SJF(RAM& ram, Disco& disco, Cache& cache);
+    void schedule_Lottery(RAM& ram, Disco& disco, Cache& cache);
 };
 
 #endif
